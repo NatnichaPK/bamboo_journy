@@ -1,8 +1,8 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-// วาง config ที่คุณก๊อปปี้มาตรงนี้ค่ะ
 const firebaseConfig = {
   apiKey: "AIzaSyAANLqTiF-IqpotvO0-SNkRlhii5vxxVlE",
   authDomain: "bamboo-journy.firebaseapp.com",
@@ -16,5 +16,7 @@ const firebaseConfig = {
 // เริ่มต้นการทำงานของ Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
 
 export { db };

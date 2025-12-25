@@ -140,7 +140,7 @@
   box-sizing: border-box;
   height: 54px;
 }
-.sidebar-collapsed .garden-status-pill { justify-content: center; width: 54px; height: 54px; padding: 0; }
+.sidebar-collapsed .garden-status-pill { justify-content: center; width: 54px; height: 54px; padding: 0; display: none; }
 .sidebar-expanded .garden-status-pill { justify-content: flex-start; }
 
 .garden-icon { font-size: 1.4rem; min-width: 24px; width: 24px; display: flex; align-items: center; justify-content: center; }
@@ -251,7 +251,322 @@
 .action-btn-main, .action-btn-save { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
 .action-btn-main:hover { transform: translateY(-2px); filter: brightness(1.05); }
 
-.item-card, .journal-card { padding: 20px; border-radius: 22px; border: 1px solid rgba(0,0,0,0.02); margin-bottom: 12px; background: #fff; display: flex; justify-content: space-between; align-items: center; }
+.item-card, .journal-card { padding: 20px; border-radius: 22px; border: 1px solid rgba(0,0,0,0.02); margin-bottom: 12px; background: #fff; display: flex; justify-content: space-between; align-items: flex-start; position: relative; }
+
+/* For journals in grid: center content */
+.items-list .journal-card {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: flex-start;
+  min-height: 130px;
+  margin-bottom: 0;
+  padding: 16px;
+  border: 2px solid rgba(0,0,0,0.12);
+  order: 1;
+}
+
+.item-card.editing { background: #fffbf0; border: 2px solid var(--accent); }
+
+.item-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.item-actions-edit {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-btn:hover {
+  transform: scale(1.15);
+}
+
+.delete-btn:hover {
+  transform: scale(1.15);
+}
+
+.save-btn, .cancel-btn {
+  font-size: 0.85rem;
+  padding: 4px 6px;
+}
+
+.save-btn:hover {
+  transform: scale(1.1);
+}
+
+.cancel-btn {
+  font-size: 1rem;
+}
+
+.cancel-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Journal delete icon (top-right) */
+.journal-card { position: relative; }
+.journal-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+}
+.journal-actions .icon-btn {
+  font-size: 0.9rem;
+  padding: 4px 6px;
+}
+
+.mail-icon-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: auto;
+  height: auto;
+  margin: 0 !important;  /* ลบ margin ที่อาจทำให้เบี้ยวออก */
+  padding: 0 !important;  /* ลบ padding ที่อาจทำให้เบี้ยวออก */
+  font-size: 3.5rem;      /* ปรับขนาดซองจดหมายตามต้องการ */
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;         /* ช่วยให้ emoji อยู่ตรงกลางพื้นที่ของมัน */
+}
+/* Centered, smaller, faded journal content */
+.card-top { 
+  display: flex; 
+  flex-direction: column; /* เปลี่ยนให้เรียงจากบนลงล่าง */
+  justify-content: center;
+  align-items: center; 
+  gap: 10px;        /* ระยะห่างระหว่างซองจดหมายกับบรรทัดวันที่ */
+  min-height: 100px; /* รีเซ็ตค่าความสูงเดิม */
+  padding: 15px 12px 5px 12px; 
+  position: relative;
+}
+
+/* For grid journal cards: simplify card-top */
+.items-list .journal-card .card-top {
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  min-height: auto;
+  width: 100%;
+  flex-direction: column;
+  padding: 0;
+}
+
+.card-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 14;
+}
+
+
+/* For grid: position mail icon in center */
+.items-list .journal-card .mail-icon-top {
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+  z-index: 1;
+  margin-bottom: 16px;
+  font-size: 3.2rem;
+  width: 72px;
+  height: 72px;
+  order: 2;
+}
+
+.card-date { font-size: 0.9rem; color: rgba(0,0,0,0.6); }
+
+/* Show mood emoji in grid view */
+.items-list .journal-card .card-left .mood {
+  display: inline;
+  font-size: 1.2rem;
+}
+
+/* Left-side container for mood/lock + date so mail icon can remain centered */
+.card-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* For grid: position card-left at bottom center */
+.items-list .journal-card .card-left {
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+  z-index: 1;
+  gap: 8px;
+  order: 3;
+  flex-direction: row !important;
+  width: auto;
+  justify-content: center;
+}
+
+.journal-grid .journal-card {
+  border: 1px solid #B8DB80 !important; 
+  border-radius: 20px;
+  min-height: 100px !important;
+  max-width: 300px !important;  
+  width: 100%;                  
+  margin: auto;              
+  padding: 10px !important;   
+  display: flex;
+  flex-direction: column;
+  justify-content: center;     
+  align-items: center;         
+}
+
+.journal-grid .card-body-wrapper {
+  display: none !important; 
+}
+
+.journal-grid .card-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 5px;
+  padding: 0;
+}
+
+.journal-grid .mail-icon-top {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 5.5rem;
+  line-height: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-body-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 12px 18px 12px;
+  text-align: center;
+  min-height: 56px;
+}
+.card-body {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(0,0,0,0.65);
+  line-height: 1.5;
+  max-height: 6.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Make mail icon clickable */
+.mail-icon-top { cursor: pointer; }
+
+/* Modal overlay and journal note */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.journal-modal {
+  background: transparent;
+  padding: 12px;
+  border-radius: 12px;
+}
+.note-card {
+  background: #fff8e8;
+  border-radius: 12px;
+  padding: 18px 22px;
+  width: 320px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  position: relative;
+  text-align: center;
+}
+.note-emoji { font-size: 1.6rem; margin-bottom: 8px; }
+.note-content { color: #5c4b40; font-size: 1rem; line-height: 1.6; }
+.note-date { margin-top: 12px; font-size: 0.85rem; color: #8b7f76; }
+.modal-close { position: absolute; right: -6px; top: -6px; background: white; border: 1px solid #eee; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; }
+
+.item-info.edit-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.edit-input {
+  width: 100%;
+  border: 1px solid #ddd;
+  background: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+}
+
+.edit-input:focus {
+  border-color: var(--accent);
+}
+
+.edit-dates {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.date-input-small {
+  flex: 1;
+  min-width: 120px;
+  border: 1px solid #ddd;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+}
+
+.date-input-small:focus {
+  border-color: var(--accent);
+}
 
 /* Checkbox มนกลม */
 .circle-check { 
@@ -305,7 +620,7 @@
   display: flex; flex-direction: column; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative; flex-shrink: 0; box-shadow: var(--shadow);
 }
-.sidebar-collapsed .sidebar { width: 88px; }
+.sidebar-collapsed .sidebar { width: 88px; display: none; }
 
 .sidebar-container {
   display: flex; flex-direction: column; height: 100%; padding: 30px 0;
@@ -408,7 +723,7 @@
   border-radius: 20px; cursor: pointer; transition: 0.3s; color: var(--text);
   width: calc(100% - 24px); gap: 15px; box-sizing: border-box;
 }
-.sidebar-collapsed .nav-item-pill { justify-content: center; width: 54px; }
+.sidebar-collapsed .nav-item-pill { justify-content: center; width: 54px; display: none; }
 .nav-item-pill.active { background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.03); font-weight: 700; }
 
 /* --- Diary Buttons (แก้ไขสีเมื่อกดเลือก) --- */
@@ -451,7 +766,16 @@
 .cozy-card { background: #fff; border: 1px solid rgba(0,0,0,0.04); border-radius: 28px; padding: 24px; margin-bottom: 30px; }
 .full-input { width: 100%; border: none; background: #fafafa; padding: 18px; border-radius: 18px; outline: none; font-size: 1.1rem; margin-bottom: 15px; }
 .action-btn-main, .action-btn-save { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; }
-.item-card, .journal-card { padding: 20px; border-radius: 22px; border: 2px solid rgba(0,0,0,0.08); margin-bottom: 12px; background: #fff; display: flex; justify-content: space-between; align-items: center; }
+.item-card, .journal-card { 
+  padding: 20px; 
+  border-radius: 22px; 
+  border: 3px solid #B8DB80; 
+  margin-bottom: 12px; 
+  background: #fff; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+}
 .circle-check { width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent); }
 .mood-strip { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
 .mood-item { background: white; border: 1px solid #eee; padding: 8px 14px; border-radius: 12px; cursor: pointer; font-size: 1.3rem; height: 44px; display: flex; align-items: center; transition: 0.2s; }
@@ -501,7 +825,92 @@
   font-style: italic;
 }
 
-.sidebar-float-toggle { position: absolute; right: -13px; top: 42px; width: 26px; height: 26px; background: white; border: 1px solid #eee; border-radius: 50%; cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.item-dates-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-created {
+  font-size: 0.8rem;
+  color: #999;
+  font-weight: 500;
+}
+
+.item-task-with-dates {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.todo-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.items-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.journal-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* เรียง 4 คอลัมน์เหมือนเดิม */
+  gap: 20px;
+}
+
+.journal-grid .journal-card .card-left {
+  position: relative;
+  display: flex;
+  flex-direction: row !important;
+  justify-content: center;
+  width: auto;  
+  gap: 8px;
+  order: 3;
+}
+
+/* Responsive: 3 columns on tablet, 2 on mobile */
+@media (max-width: 1200px) {
+  .items-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .items-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .items-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.date-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.date-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item-dates-display {
+  min-width: 200px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.sidebar-float-toggle { position: absolute; right: -13px; top: 42px; width: 26px; height: 26px; background: white; border: 1px solid #eee; border-radius: 50%; cursor: pointer; z-index: 100; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .xp-track { width: 100%; height: 6px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; margin-top: 4px; }
 .xp-bar { height: 100%; background: var(--accent); transition: 0.5s; }
 
@@ -629,4 +1038,186 @@
 
 @media (max-width: 768px) {
   .mobile-menu-btn { display: block; }
+}
+
+/* --- Login Screen --- */
+.login-screen {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fcfaf7;
+}
+
+.login-card {
+  text-align: center;
+  background: white;
+  padding: 50px;
+  border-radius: 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+  max-width: 400px;
+  width: 90%;
+}
+
+.login-btn {
+  margin-top: 25px;
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 16px;
+}
+
+/* --- User Profile in Sidebar --- */
+.user-profile-lite {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 25px;
+  width: 100%;
+}
+
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.logout-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+}
+
+/* --- Overdue Styling --- */
+.overdue-text {
+  color: #ff4d4d !important;
+  font-weight: 800 !important;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+/* --- Item Card Done State --- */
+.item-card.done {
+  opacity: 0.6;
+  filter: grayscale(0.5);
+}
+
+.item-card.done .item-task {
+  text-decoration: line-through;
+}
+
+/* Profile Minimal Style */
+.user-profile-minimal {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  margin-bottom: 10px;
+}
+
+.avatar-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.user-avatar-only {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.user-avatar-only:hover {
+  transform: scale(1.1);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  background: white;
+  min-width: 150px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  z-index: 100;
+  padding: 10px 0;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  display: block;
+}
+
+.user-display-name {
+  font-weight: bold;
+  color: #888;
+}
+
+.logout-btn-red {
+  color: #ff4d4d;
+  cursor: pointer;
+}
+
+.logout-btn-red:hover {
+  background: #fff5f5;
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.logout-link-container {
+  margin-top: 30px; /* ขยับลงมาล่างกว่าเดิม */
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-bottom: 10px;
+}
+
+.logout-text-link {
+  color: #2d5a27; /* สีเขียวเข้ม */
+  text-decoration: underline;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.logout-text-link:hover {
+  opacity: 0.7;
 }
