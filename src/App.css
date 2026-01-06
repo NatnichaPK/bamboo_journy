@@ -1,4 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Itim&family=Sriracha&display=swap');
 :root {
+  --font-family: 'Itim', cursive;
   --bg-app: #fcfaf7;
   --sidebar: #f1ede6;
   --text: #5c4b40;
@@ -20,7 +22,14 @@
   --prio-low: #a89878;
 }
 
-* { box-sizing: border-box; }
+* { 
+  box-sizing: border-box;
+  font-family: var(--font-family) !important; 
+}
+h1, h2, h3, b {
+  font-family: var(--font-family);
+  letter-spacing: 0.5px;
+}
 
 /* --- Layout --- */
 .app-layout { 
@@ -1259,7 +1268,7 @@
 }
 
 .logout-text-link {
-  color: #2d5a27; /* สีเขียวเข้ม */
+  color: #2d5a27;
   text-decoration: underline;
   font-size: 0.85rem;
   cursor: pointer;
@@ -1304,7 +1313,7 @@
 .library-card-mini {
   background: white;
   border-radius: 16px;
-  border: 2px solid #D2DCB6;
+  border: 2px solid #fdfff9;
   overflow: hidden;
   transition: transform 0.2s;
   display: flex;
@@ -1320,7 +1329,7 @@
 .lib-mini-header { display: flex; justify-content: space-between; align-items: flex-start; }
 .truncate-mini { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
 
-.lib-mini-actions { display: flex; gap: 6px; cursor: pointer; font-size: 0.8rem; opacity: 0.6; }
+.lib-mini-actions { display: flex; gap: 6px; cursor: pointer; font-size: 0.6rem; opacity: 0.6; }
 .lib-mini-actions span:hover { opacity: 1; transform: scale(1.1); }
 
 .stars-mini { font-size: 0.7rem; color: #ffcc00; }
@@ -1422,53 +1431,7 @@
 }
 .book-on-shelf:hover { transform: scale(1.1) translateY(-5px); z-index: 100; }
 
-/* กองดองซ้อนกัน */
-.tbr-stack-visual {
-  position: relative;
-  width: 150px;
-  height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 
-.tbr-stacked-book {
-  position: absolute;
-  width: 120px;
-  transition: all 0.3s;
-}
-
-.tbr-stacked-book img {
-  width: 100%;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-}
-
-.tbr-stacked-book:hover {
-  transform: translateX(10px);
-  cursor: help;
-}
-
-.tbr-tooltip {
-  visibility: hidden;
-  position: absolute;
-  left: 100%;
-  background: #5c4b40;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 12px;
-  white-space: nowrap;
-  margin-left: 10px;
-  z-index: 200;
-}
-.tbr-stacked-book:hover .tbr-tooltip { visibility: visible; }
-.tbr-label {
-  position: absolute;
-  bottom: -30px;
-  font-weight: bold;
-  color: #8b7355;
-  font-size: 14px;
-}
 /* Library Visual Layout */
 .library-visual-wrapper {
   display: flex;
@@ -1483,14 +1446,16 @@
 
 /* Bookshelf Display */
 .bookshelf-container {
-  width: 320px; /* ปรับตามขนาดรูปพื้นหลัง */
-  height: 520px;
+  width: 100%;
+  max-width: 320px; 
+  aspect-ratio: 2 / 3.5; 
   background-image: url('https://path-to-your-uploaded/Bookshelf_background.jpg');
   background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
   position: relative;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  margin: 0 auto;
 }
-
 .shelf-books-grid {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -1498,41 +1463,184 @@
 
 .spine-on-shelf {
   position: absolute;
-  height: 65px; /* ขนาดไอคอนสันหนังสือแนวตั้ง */
+  height: 14%; 
   width: auto;
+  transform: translateY(-80%); 
   transition: transform 0.2s;
-  cursor: pointer;
+  z-index: 2;
 }
-.spine-on-shelf:hover { transform: scale(1.1) translateY(-5px); z-index: 10; }
+.spine-on-shelf:hover {
+  transform: translateY(-100%) scale(1.1);
+  z-index: 10;
+}
 
-/* TBR Stack Display */
-.tbr-stack-container {
-  position: relative;
-  width: 140px;
-  height: 350px;
+.library-visual-sidebar {
+  width: 380px; /* หรือปรับตามความเหมาะสม */
+  flex-shrink: 0;
+}
+
+/* .library-main-layout {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  margin-top: 20px;
+} */
+
+.library-top-layout {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+.lib-form-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.library-list-full-width {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.visual-card-bg {
+  background: #ffffff; 
+  padding: 24px;
+  border-radius: 28px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: visible !important; 
+  width: fit-content;
+  min-width: 350px;
+  border: 1px solid #efe8df;
+}
+.lib-mini-card b {
+  font-size: 0.85rem !important;
+}
+.lib-mini-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1.5px solid #D2DCB6;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.lib-mini-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+.price-mini, .loc-mini {
+  font-size: 0.75rem !important;
+}
+.library-list-content {
+  flex: 1;
+}
+.library-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+  gap: 20px;
+  padding: 10px 0;
+}
+/* ปุ่มยกเลิกสไตล์ใหม่ */
+.cancel-btn-styled {
+  background: #f1ede6; /* สีเดียวกับ sidebar */
+  color: #8b7f76;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+  font-family: inherit;
 }
 
-.tbr-horizontal-book {
-  position: absolute;
-  width: 130px; /* ขนาดรูปกองดองแนวนอน */
-  transition: all 0.3s;
+.cancel-btn-styled:hover {
+  background: #e5e0d8;
+  color: #5c4b40;
+  transform: translateY(-2px);
 }
-.tbr-horizontal-book img {
-  width: 100%;
-  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.1));
+@keyframes sparkle {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0px #fff); }
+  50% { transform: scale(1.1) rotate(2deg); filter: drop-shadow(0 0 10px #B8DB80); }
 }
 
-.tbr-count-tag {
-  position: absolute;
-  bottom: -30px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #8b7355;
-  background: #fff;
-  padding: 4px 12px;
+.ready-to-open {
+  animation: sparkle 1.5s infinite ease-in-out;
+  cursor: pointer;
+  position: relative;
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.fade-in {
+  animation: slideIn 0.5s ease-out;
+}
+/* สไตล์ตอนคลิกคะแนน */
+.score-badge-main:hover {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+.score-badge-main.active {
+  background-color: var(--accent) !important;
+  color: white !important;
+}
+
+.score-badge-main.active div {
+  color: white !important;
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Ambience Buttons */
+.ambience-btn {
+  background: var(--sidebar);
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 5px 8px;
+  transition: all 0.2s;
+}
+.ambience-btn:hover { background: var(--accent); transform: scale(1.1); }
+
+/* Focus Timer Card */
+.focus-timer-card {
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  border: 2px dashed var(--accent);
+}
+
+.timer-visual { display: flex; align-items: center; gap: 15px; }
+.timer-display { font-size: 1.8rem; font-weight: bold; font-family: 'monospace'; color: var(--text); }
+
+.timer-main-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.timer-reset-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: 10px;
+  opacity: 0.5;
 }
