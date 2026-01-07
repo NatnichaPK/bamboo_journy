@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { db, auth, googleProvider } from './firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
@@ -21,6 +21,9 @@ function App() {
   const [librarySubTab, setLibrarySubTab] = useState<'read' | 'tbr' | 'wish' | 'place'>('read');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isNight, setIsNight] = useState(false);
+
+  // --- Ref สำหรับเลื่อนหน้าจอไปยังฟอร์มแก้ไข ---
+  const libraryFormRef = useRef<HTMLDivElement>(null);
 
   // Data States
   const [todos, setTodos] = useState<any[]>([]);
@@ -56,14 +59,15 @@ function App() {
   const [unlockDate, setUnlockDate] = useState('');
   const [dailyFortune, setDailyFortune] = useState('');
   const [showScoreDetail, setShowScoreDetail] = useState(false);
-  const [achievementsNotif, setAchievementsNotif] = useState<string | null>(null);
 
+  // Pomodoro States
   const [currentAmbience, setCurrentAmbience] = useState('JdqL89ZZwFw');
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerMode, setTimerMode] = useState<'work' | 'break'>('work');
+  const [isTimerExpanded, setIsTimerExpanded] = useState(false);
 
-  // --- 1. System Effects ---
+  // --- Effects ---
   useEffect(() => {
     const checkTime = () => {
       const hour = new Date().getHours();
@@ -109,7 +113,6 @@ function App() {
     return () => { unsubTodos(); unsubJournals(); unsubRead(); unsubWish(); unsubTBR(); unsubPlaces(); };
   }, [user]);
 
-  // Pomodoro Logic
   useEffect(() => {
     let timer: any;
     if (isTimerRunning && timeLeft > 0) {
@@ -135,11 +138,10 @@ function App() {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const flowers = ["🌱", "🌿", "🪴", "🎍", "🌸", "💐"];
   const growthScore = (todos.filter(t => t.completed).length * 2) + (journals.length * 5) + (booksRead.length * 10);
   const gardenLevel = Math.min(Math.floor((growthScore % 50) / 10), 5);
+  const flowers = ["🌱", "🌿", "🪴", "🎍", "🌸", "💐"];
   const gardenMasterCount = Math.floor(growthScore / 50);
-
   const bookBadgeCount = Math.floor(booksRead.length / 5);
   const journalBadgeCount = Math.floor(journals.length / 7);
   const achieverBadgeCount = Math.floor(todos.filter(t => t.completed && t.priority === 'high').length / 3);
@@ -162,7 +164,6 @@ function App() {
     setJournalText(''); setUnlockDate('');
   };
 
-  // --- ฟังก์ชันเปิดดูจดหมายที่หายไป ---
   const markAsOpened = async (journal: any) => {
     if (journal.type === 'letter' && !journal.opened) {
       await updateDoc(doc(db, "journals", journal.id), { opened: true });
@@ -197,10 +198,17 @@ function App() {
   };
 
   const startEditLib = (item: any, e: React.MouseEvent) => {
-    e.stopPropagation(); setIsLibEditing(true); setEditLibId(item.id);
-    setLibTitle(item.title || item.name); setLibImage(item.image);
+    e.stopPropagation(); 
+    setIsLibEditing(true); 
+    setEditLibId(item.id);
+    setLibTitle(item.title || item.name); 
+    setLibImage(item.image);
     setLibExtra(item.review || item.reason || item.location || item.note);
-    setLibPrice(item.price || ''); setLibRating(item.rating || 5);
+    setLibPrice(item.price || ''); 
+    setLibRating(item.rating || 5);
+
+    // --- เลื่อนหน้าจอไปที่ฟอร์มแก้ไข ---
+    libraryFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const saveEditLib = async () => {
@@ -274,7 +282,7 @@ function App() {
             {activeTab === 'todo' && (
               <section className="fade-section">
                 <header className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div><h1>Missions</h1><p>จัดลำดับความสำคัญของวันกันเถอะ ✨</p></div>
+                  <div><h1>Missions</h1><p>มีอะไรต้องทำอีกเยอะเลย สู้!! ✨</p></div>
                   <div className="ambience-selector" style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => setCurrentAmbience('JdqL89ZZwFw')} className="ambience-btn" title="Lo-fi Cozy">☕</button>
                     <button onClick={() => setCurrentAmbience('CHFif_y2TyM')} className="ambience-btn" title="Rain Sounds">🌧️</button>
@@ -285,8 +293,8 @@ function App() {
                   <form onSubmit={handleTodoSubmit}>
                     <div className="input-row"><input type="text" className="full-input" placeholder="ต้องทำอะไรมั้ยวันนี้?" value={todoInput} onChange={(e) => setTodoInput(e.target.value)} /><button type="submit" className="action-btn-main">เพิ่ม</button></div>
                     <div className="date-row">
-                      <label className="date-label"><span>เริ่ม</span><input type="date" className="date-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
-                      <label className="date-label"><span>เสร็จ</span><input type="date" className="date-input" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></label>
+                      <label className="date-label"><span>ต้องทำ</span><input type="date" className="date-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
+                      <label className="date-label"><span>ต้องเสร็จ</span><input type="date" className="date-input" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></label>
                     </div>
                     <div className="pill-selector">
                       {(['low', 'medium', 'high'] as const).map(p => (<button key={p} type="button" className={`pill-btn ${priority === p ? `active-${p}` : ''}`} onClick={() => setPriority(p)}>{p === 'low' ? 'ชิลล์ 🌸' : p === 'medium' ? 'ปกติ ✉️' : 'ด่วน 🔥'}</button>))}
@@ -319,9 +327,9 @@ function App() {
                     <button className={`pill-btn ${journalType === 'letter' ? 'active-letter' : ''}`} onClick={() => setJournalType('letter')}>จดหมายถึงอนาคต 📮</button>
                   </div>
                   <div className="mood-strip">
-                    {['☀️', '☁️', '🌧️', '✨', '💤'].map(m => (<button key={m} className={`mood-item ${mood === m ? 'on' : ''}`} onClick={() => setMood(m)}>{m}</button>))}
+                    {['☀️', '🌧️', '✨', '💤','🎧','😎','🌻','🤣'].map(m => (<button key={m} className={`mood-item ${mood === m ? 'on' : ''}`} onClick={() => setMood(m)}>{m}</button>))}
                     {journalType === 'letter' && <input type="date" className="date-picker-soft" value={unlockDate} onChange={(e) => setUnlockDate(e.target.value)} />}
-                    <button onClick={addJournal} className="action-btn-save mood-save-btn">บันทึก 🫶</button>
+                    <button onClick={addJournal} className="action-btn-save mood-save-btn">บันทึกเรื่องราวดีๆ 🫶</button>
                   </div>
                   <textarea className="text-area-cozy" placeholder="เล่าเรื่องวันนี้ให้ฟังหน่อย..." value={journalText} onChange={(e) => setJournalText(e.target.value)}></textarea>
                 </div>
@@ -332,7 +340,7 @@ function App() {
                     return (
                       <div key={j.id} className={`journal-card ${isReady ? 'ready-to-open' : ''}`} onClick={() => { if (isLocked) return alert(`เปิดวันที่ ${new Date(j.unlockDate!).toLocaleDateString('th-TH')}`); markAsOpened(j); setSelectedJournal(j); setJournalModalOpen(true); }} style={{ position: 'relative', overflow: 'visible' }}>
                         <div className="card-top">
-                          <div style={{ position: 'absolute', top: '5px', right: '5px' }}>{isReady && <span>✨</span>}{j.opened && <span style={{ color: '#B8DB80' }}>✔️</span>}</div>
+                          <div style={{ position: 'absolute', top: '5px', right: '5px' }}>{isReady && <span>✨</span>}{j.opened && <span style={{ color: '#FFD700' }}>⭐</span>}</div>
                           <span style={{ fontSize: '3.5rem' }}>{isLocked ? '🔒' : '💌'}</span>
                           <div className="mood-date-row"><span>{j.mood}</span><span className="card-date">{j.createdAt?.toDate().toLocaleDateString('th-TH')}</span></div>
                         </div>
@@ -350,26 +358,26 @@ function App() {
                     <button className={`pill-btn ${librarySubTab === 'read' ? 'active-library-sub' : ''}`} onClick={() => {setLibrarySubTab('read'); resetLibForm();}}>อ่านแล้ว ✨</button>
                     <button className={`pill-btn ${librarySubTab === 'tbr' ? 'active-library-sub' : ''}`} onClick={() => {setLibrarySubTab('tbr'); resetLibForm();}}>กองดอง 📚</button>
                     <button className={`pill-btn ${librarySubTab === 'wish' ? 'active-library-sub' : ''}`} onClick={() => {setLibrarySubTab('wish'); resetLibForm();}}>อยากอ่าน 📮</button>
-                    <button className={`pill-btn ${librarySubTab === 'place' ? 'active-library-sub' : ''}`} onClick={() => {setLibrarySubTab('place'); resetLibForm();}}>ที่เที่ยว 📍</button>
+                    <button className={`pill-btn ${librarySubTab === 'place' ? 'active-library-sub' : ''}`} onClick={() => {setLibrarySubTab('place'); resetLibForm();}}>อยากไปนั่งอ่าน 📍</button>
                   </div>
                 </header>
-                <div style={{ display: 'flex', gap: '30px', marginBottom: '30px' }}>
-                  <div style={{ width: '380px' }}>
+                <div style={{ display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row', gap: '30px', marginBottom: '30px' }}>
+                  <div style={{ width: '100%', maxWidth: '380px', margin: '0 auto' }}>
                     <div className="bookshelf-container" style={{ aspectRatio: '2/3.5', backgroundSize: '100% 100%', backgroundImage: `url(${SHELF_BG})`, position: 'relative' }}>
                         {booksRead.map((book, idx) => (<img key={book.id} src={BOOK_SPINES[idx % BOOK_SPINES.length]} className="spine-on-shelf" style={{ position: 'absolute', height: '14%', top: `${14 + (Math.floor(idx / 12) * 15.8)}%`, left: `${12 + ((idx % 12) * 3.5)}%`, transform: 'translateY(-80%)' }} />))}
                     </div>
                   </div>
-                  <div className="cozy-card" style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', gap: '20px' }}>
-                      <div onClick={() => document.getElementById('img-up')?.click()} style={{ width: '120px', height: '160px', border: '2px dashed #ddd', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', background: '#f9f9f9' }}>
+                  <div className="cozy-card" style={{ flex: 1 }} ref={libraryFormRef}>
+                    <div style={{ display: 'flex', gap: '20px', flexDirection: window.innerWidth < 480 ? 'column' : 'row' }}>
+                      <div onClick={() => document.getElementById('img-up')?.click()} style={{ width: '120px', height: '160px', border: '2px dashed #ddd', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', background: '#f9f9f9', alignSelf: 'flex-start' }}>
                         {libImage ? <img src={libImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '2.5rem', opacity: 0.3 }}>📸</span>}
                       </div>
                       <input id="img-up" type="file" hidden accept="image/*" onChange={handleImageUpload} />
                       <div style={{ flex: 1 }}>
-                        <input type="text" className="full-input" placeholder="ชื่อหนังสือ/สถานที่..." value={libTitle} onChange={(e) => setLibTitle(e.target.value)} />
-                        <div style={{ fontSize: '0.8rem', color: '#999', margin: '5px 0' }}>{libImage ? '✅ เลือกรูปแล้ว' : '☝️ จิ้มกล้องเพื่ออัปโหลด'}</div>
+                        <input type="text" className="full-input" placeholder="ชื่อหนังสือ" value={libTitle} onChange={(e) => setLibTitle(e.target.value)} />
+                        <div style={{ fontSize: '0.8rem', color: '#999', margin: '5px 0' }}>{libImage ? '✅ เลือกรูปแล้ว' : '☝️ กดที่กล้องเพื่ออัปโหลด'}</div>
                         {librarySubTab === 'read' && <div>Rating: {[1,2,3,4,5].map(s => <span key={s} onClick={() => setLibRating(s)} style={{ cursor: 'pointer', color: s <= libRating ? 'gold' : '#ccc' }}>⭐</span>)}</div>}
-                        <textarea className="text-area-cozy" placeholder="จดโน้ต..." value={libExtra} onChange={(e) => setLibExtra(e.target.value)} />
+                        <textarea className="text-area-cozy" placeholder="Dump Text..." value={libExtra} onChange={(e) => setLibExtra(e.target.value)} />
                         <div style={{display:'flex', gap:'10px', marginTop:'10px'}}>
                           <button onClick={isLibEditing ? saveEditLib : addLibraryItem} className="action-btn-main">{isLibEditing ? 'บันทึกแก้ไข' : 'เพิ่มลงคลัง'}</button>
                           {isLibEditing && <button onClick={resetLibForm} className="action-btn-main" style={{background:'#ccc'}}>ยกเลิก</button>}
@@ -378,7 +386,7 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <div className="library-mini-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '20px' }}>
+                <div className="library-mini-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '15px' }}>
                   {(librarySubTab === 'read' ? booksRead : librarySubTab === 'tbr' ? booksTBR : librarySubTab === 'wish' ? booksWish : places).map((item: any) => (
                     <div key={item.id} className="lib-mini-card" onClick={() => {setSelectedLibItem(item); setLibModalOpen(true);}}>
                       <div style={{ aspectRatio: '3/4', background: '#f5f5f5' }}>{item.image && <img src={item.image} alt="cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}</div>
@@ -396,10 +404,29 @@ function App() {
               <section className="fade-section">
                 <header className="page-header">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
-                    <div><h1>My Achievements</h1><p>สะสมความภูมิใจทีละนิด ✨</p></div>
-                    <div onClick={() => setShowScoreDetail(!showScoreDetail)} style={{ background: 'var(--sidebar)', padding: '10px 20px', borderRadius: '20px', cursor: 'pointer' }}>
-                      <span style={{ fontSize: '0.8rem' }}>คะแนนรวม ▾</span>
-                      <div style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>{growthScore} คะแนน</div>
+                    <div><h1>My Achievements</h1><p>รางวัลของคนสม่ำเสมอ ✨</p></div>
+                    <div style={{ position: 'relative' }}>
+                      <div onClick={() => setShowScoreDetail(!showScoreDetail)} style={{ background: 'var(--sidebar)', padding: '10px 18px', borderRadius: '20px', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.05)', transition: 'all 0.2s' }}>
+                        <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>คะแนนรวม ▾</span>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{growthScore} คะแนน</div>
+                      </div>
+                      {showScoreDetail && (
+                        <div className="score-dropdown" style={{ 
+                          position: 'absolute', top: '110%', right: 0, zIndex: 50,
+                          background: 'white', padding: '15px', borderRadius: '18px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)', minWidth: '220px',
+                          border: '1px solid #f0f0f0', animation: 'fadeInDown 0.3s ease-out'
+                        }}>
+                          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>รายละเอียดคะแนน ✨</h4>
+                          <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>📝 Missions (x2):</span> <b>{todos.filter(t => t.completed).length * 2}</b></div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>📖 Diary (x5):</span> <b>{journals.length * 5}</b></div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>📚 Books (x10):</span> <b>{booksRead.length * 10}</b></div>
+                          </div>
+                          <hr style={{ margin: '12px 0', border: '0.5px solid #eee' }} />
+                          <div style={{ textAlign: 'center', fontSize: '0.75rem', color: '#999', cursor: 'pointer' }} onClick={() => setShowScoreDetail(false)}>ปิดหน้าต่าง</div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </header>
@@ -414,62 +441,53 @@ function App() {
           </div>
         </div>
 
-        {/* Floating Timer */}
         <div className="focus-timer-floating" style={{
-          position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000,
-          background: timerMode === 'work' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(230, 245, 255, 0.95)',
-          padding: '15px 20px', borderRadius: '24px', border: timerMode === 'work' ? '2px solid #B8DB80' : '2px solid #80C6DB',
-          display: 'flex', alignItems: 'center', gap: '15px'
-        }}>
-          <span style={{ fontSize: '2rem' }}>{timerMode === 'work' ? '🌳' : '☕'}</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{formatTime(timeLeft)}</div>
-          <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="timer-main-btn" style={{ background: timerMode === 'work' ? '#B8DB80' : '#80C6DB' }}>{isTimerRunning ? 'Pause' : 'Start'}</button>
-          <button onClick={() => { setIsTimerRunning(false); setTimeLeft(timerMode === 'work' ? 25*60 : 5*60); }}>↺</button>
+          position: 'fixed', bottom: '25px', right: '25px', zIndex: 1000,
+          background: timerMode === 'work' ? 'rgba(255, 255, 255, 0.98)' : 'rgba(235, 248, 255, 0.98)',
+          padding: isTimerExpanded ? '16px 22px' : '0', 
+          borderRadius: isTimerExpanded ? '30px' : '50%', 
+          border: timerMode === 'work' ? '2px solid #B8DB80' : '2px solid #80C6DB',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: isTimerExpanded ? '18px' : '0',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+          cursor: 'pointer',
+          transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+          overflow: 'hidden',
+          width: isTimerExpanded ? 'auto' : '65px',
+          height: isTimerExpanded ? 'auto' : '65px'
+        }} onClick={() => !isTimerExpanded && setIsTimerExpanded(true)}>
+          <span style={{ fontSize: isTimerExpanded ? '2.2rem' : '1.8rem', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }} 
+            className={!isTimerExpanded && isTimerRunning ? 'breathing-icon' : ''}
+            onClick={(e) => { if(isTimerExpanded) { e.stopPropagation(); setIsTimerExpanded(false); } }}>
+            {timerMode === 'work' ? '🌳' : '☕'}
+          </span>
+          {isTimerExpanded && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', animation: 'fadeInScale 0.4s ease-out' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: 'bold', fontFamily: 'monospace', color: '#555' }}>{formatTime(timeLeft)}</div>
+              <button onClick={(e) => { e.stopPropagation(); setIsTimerRunning(!isTimerRunning); }} 
+                className="timer-main-btn"
+                style={{ background: timerMode === 'work' ? '#B8DB80' : '#80C6DB', color: 'white', border: 'none', borderRadius: '14px', padding: '8px 16px', fontWeight: 'bold' }}>
+                {isTimerRunning ? 'Pause' : 'Start'}
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setIsTimerRunning(false); setTimeLeft(timerMode === 'work' ? 25*60 : 5*60); }} 
+                style={{background:'none', border:'none', cursor:'pointer', fontSize: '1.2rem', opacity: 0.6}}>↺</button>
+              <button onClick={(e) => { e.stopPropagation(); setIsTimerExpanded(false); }} 
+                style={{ fontSize: '1rem', opacity: 0.3, background:'none', border:'none', marginLeft: '5px' }}>✕</button>
+            </div>
+          )}
+          {!isTimerExpanded && isTimerRunning && (
+            <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#FF6B6B', width: '12px', height: '12px', borderRadius: '50%', border: '2px solid white', animation: 'pulse 2s infinite' }}></div>
+          )}
         </div>
 
-        {/* --- MODAL จดหมาย (จดหมายจะแสดงเนื้อหาเมื่อกดเปิด) --- */}
-        {journalModalOpen && selectedJournal && (
-          <div className="modal-overlay" onClick={() => setJournalModalOpen(false)}>
-            <div className="journal-modal" onClick={e => e.stopPropagation()}>
-              <div className="note-card">
-                <div className="note-content" style={{ whiteSpace: 'pre-wrap', color: 'inherit' }}>
-                  {selectedJournal.content}
-                </div>
-                <button className="action-btn-main" style={{ marginTop: '20px' }} onClick={() => setJournalModalOpen(false)}>
-                  ปิดหน้าต่างนี้ 🌿
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Library Modal */}
-        {libModalOpen && selectedLibItem && (
-          <div className="modal-overlay" onClick={() => setLibModalOpen(false)}>
-            <div className="journal-modal" onClick={e => e.stopPropagation()}>
-              <div className="note-card" style={{ padding: 0, width: '400px', overflow: 'hidden' }}>
-                <div style={{ height: '220px', background: '#f5f5f5' }}>
-                  {selectedLibItem.image && <img src={selectedLibItem.image} alt="cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                </div>
-                <div style={{ padding: '20px' }}>
-                  <h2>{selectedLibItem.title || selectedLibItem.name}</h2>
-                  <p style={{ color: 'inherit' }}>{selectedLibItem.review || selectedLibItem.note || selectedLibItem.reason || selectedLibItem.location}</p>
-                  <button className="action-btn-main" style={{ width: '100%', marginTop: '20px' }} onClick={() => setLibModalOpen(false)}>ปิด 🌿</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Delete Modal */}
         {deleteModalOpen && (
           <div className="modal-overlay" onClick={() => setDeleteModalOpen(false)}>
             <div className="journal-modal" onClick={e => e.stopPropagation()}>
               <div className="note-card" style={{ textAlign: 'center' }}>
-                <h3>ลบรายการนี้ใช่ไหม? 🗑️</h3>
+                <h3>จะลบใช่มั้ย กดผิดรึป่าว? 🗑️</h3>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-                  <button onClick={() => setDeleteModalOpen(false)}>ยกเลิก</button>
-                  <button onClick={confirmDelete} style={{ background: '#e29a9a', color:'white' }}>ยืนยันลบ</button>
+                  <button className="cancel-btn-styled" onClick={() => setDeleteModalOpen(false)}>ยกเลิก</button>
+                  <button className="action-btn-main" onClick={confirmDelete} style={{ background: '#e29a9a', color:'white' }}>ลบเลย</button>
                 </div>
               </div>
             </div>
