@@ -207,7 +207,6 @@ function App() {
     setLibPrice(item.price || ''); 
     setLibRating(item.rating || 5);
 
-    // --- เลื่อนหน้าจอไปที่ฟอร์มแก้ไข ---
     libraryFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -337,8 +336,18 @@ function App() {
                   {journals.map((j) => {
                     const isReady = j.type === 'letter' && j.unlockDate && new Date(j.unlockDate).getTime() <= new Date().setHours(0,0,0,0) && !j.opened;
                     const isLocked = j.type === 'letter' && j.unlockDate && new Date(j.unlockDate).getTime() > new Date().setHours(0,0,0,0);
+                    
                     return (
-                      <div key={j.id} className={`journal-card ${isReady ? 'ready-to-open' : ''}`} onClick={() => { if (isLocked) return alert(`เปิดวันที่ ${new Date(j.unlockDate!).toLocaleDateString('th-TH')}`); markAsOpened(j); setSelectedJournal(j); setJournalModalOpen(true); }} style={{ position: 'relative', overflow: 'visible' }}>
+                      <div key={j.id} className={`journal-card ${isReady ? 'ready-to-open' : ''}`} 
+                        onClick={() => { 
+                          if (isLocked) {
+                            return alert(`เปิดวันที่ ${new Date(j.unlockDate!).toLocaleDateString('th-TH')}`); 
+                          }
+                          markAsOpened(j); 
+                          setSelectedJournal(j); 
+                          setJournalModalOpen(true); 
+                        }} 
+                        style={{ position: 'relative', overflow: 'visible' }}>
                         <div className="card-top">
                           <div style={{ position: 'absolute', top: '5px', right: '5px' }}>{isReady && <span>✨</span>}{j.opened && <span style={{ color: '#FFD700' }}>⭐</span>}</div>
                           <span style={{ fontSize: '3.5rem' }}>{isLocked ? '🔒' : '💌'}</span>
@@ -480,6 +489,42 @@ function App() {
           )}
         </div>
 
+        {/* --- Modal สำหรับอ่านจดหมาย/บันทึก --- */}
+        {journalModalOpen && selectedJournal && (
+          <div className="modal-overlay" onClick={() => setJournalModalOpen(false)}>
+            <div className="journal-modal" onClick={e => e.stopPropagation()}>
+              <div className="note-card">
+                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>{selectedJournal.mood}</div>
+                <div className="note-content" style={{ whiteSpace: 'pre-wrap', color: 'inherit', textAlign: 'left' }}>
+                  {selectedJournal.content}
+                </div>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                  <button className="action-btn-main" style={{ flex: 1 }} onClick={() => setJournalModalOpen(false)}>
+                    ปิดหน้าต่างนี้ 🌿
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {libModalOpen && selectedLibItem && (
+          <div className="modal-overlay" onClick={() => setLibModalOpen(false)}>
+            <div className="journal-modal" onClick={e => e.stopPropagation()}>
+              <div className="note-card" style={{ padding: 0, width: '400px', overflow: 'hidden' }}>
+                <div style={{ height: '220px', background: '#f5f5f5' }}>
+                  {selectedLibItem.image && <img src={selectedLibItem.image} alt="cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                </div>
+                <div style={{ padding: '20px' }}>
+                  <h2>{selectedLibItem.title || selectedLibItem.name}</h2>
+                  <p style={{ color: 'inherit' }}>{selectedLibItem.review || selectedLibItem.note || selectedLibItem.reason || selectedLibItem.location}</p>
+                  <button className="action-btn-main" style={{ width: '100%', marginTop: '20px' }} onClick={() => setLibModalOpen(false)}>ปิด 🌿</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {deleteModalOpen && (
           <div className="modal-overlay" onClick={() => setDeleteModalOpen(false)}>
             <div className="journal-modal" onClick={e => e.stopPropagation()}>
@@ -494,6 +539,12 @@ function App() {
           </div>
         )}
       </main>
+      <style>{`
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+        .breathing-icon { animation: pulse 3s ease-in-out infinite; }
+      `}</style>
     </div>
   );
 }
