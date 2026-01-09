@@ -2768,4 +2768,6 @@ b {
 @keyframes fadeInScale { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-.breathing-icon { animation: pulse 3s ease-in-out infinite; }
+.breathing-icon { 
+  animation: pulse 3s ease-in-out infinite; 
+}
