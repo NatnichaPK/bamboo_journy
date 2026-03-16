@@ -159,7 +159,7 @@ const Library: React.FC<Props> = ({ user }) => {
                    opacity: isUploading ? 0.5 : 1
                  }}>
               {isUploading ? <span>⏳</span> : 
-               libImage ? <img src={libImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : 
+               libImage ? <img src={libImage} alt="Book cover preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : 
                <span style={{ fontSize: '2.5rem', opacity: 0.3 }}>📸</span>}
             </div>
             <input id="img-up" type="file" hidden accept="image/*" onChange={handleImageUpload} disabled={isUploading} />

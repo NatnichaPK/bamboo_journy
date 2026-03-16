@@ -46,7 +46,6 @@ const Achievements: React.FC<Props> = ({ user }) => {
   }, [user]);
 
   const growthScore = (todos.filter(t => t.completed).length * 2) + (journals.length * 5) + (booksRead.length * 10);
-  const gardenLevel = Math.min(Math.floor((growthScore % 50) / 10), 5);
   const gardenMasterCount = Math.floor(growthScore / 50);
   const bookBadgeCount = Math.floor(booksRead.length / 5);
   const journalBadgeCount = Math.floor(journals.length / 7);
