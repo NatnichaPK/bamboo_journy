@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration'; // 1. เพิ่มบรรทัดนี้
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -12,6 +13,9 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// 2. เปลี่ยนบรรทัดนี้เป็น register() เพื่อเปิดใช้งาน PWA
+serviceWorkerRegistration.register(); 
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

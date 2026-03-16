@@ -20,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className={`sidebar ${mobileSidebarOpen ? 'sidebar-open' : ''}`}>
       <div className="sidebar-container">
-        <div className="sidebar-header"><div className="logo-section"><span className="logo-emoji">🌻</span><span className="brand-name">Bamboo's Book</span></div></div>
+        <div className="sidebar-header"><div className="logo-section"><span className="logo-emoji">🌻</span><span className="brand-name">KOMOREBI</span></div></div>
         <nav className="nav-list-cozy">
           <div className={`nav-item-pill ${activeTab === 'todo' ? 'active' : ''}`} onClick={() => setActiveTab('todo')}><span className="icon">📝</span> <span className="nav-text">Missions</span></div>
           <div className={`nav-item-pill ${activeTab === 'journal' ? 'active' : ''}`} onClick={() => setActiveTab('journal')}><span className="icon">📖</span> <span className="nav-text">Journal</span></div>

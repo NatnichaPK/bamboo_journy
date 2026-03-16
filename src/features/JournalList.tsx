@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, Timestamp, where } from "firebase/firestore";
 import { User } from "firebase/auth";
 import { JournalModal } from '../components/Modal';
 
@@ -19,9 +19,12 @@ const JournalList: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     if (!user) return;
-    const unsubJournals = onSnapshot(query(collection(db, "journals"), orderBy("createdAt", "desc")), (snap) => {
-      setJournals(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter((j: any) => !j.uid || j.uid === user.uid));
-    });
+    const unsubJournals = onSnapshot(
+      query(collection(db, "journals"), where("uid", "==", user.uid), orderBy("createdAt", "desc")),
+      (snap) => {
+        setJournals(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      }
+    );
     return () => unsubJournals();
   }, [user]);
 

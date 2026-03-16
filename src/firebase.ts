@@ -1,7 +1,8 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { initializeFirestore, persistentLocalCache, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAANLqTiF-IqpotvO0-SNkRlhii5vxxVlE",
@@ -13,10 +14,15 @@ const firebaseConfig = {
   measurementId: "G-PDG5YYDZ0L"
 };
 
-// เริ่มต้นการทำงานของ Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: undefined, 
+    cacheSizeBytes: CACHE_SIZE_UNLIMITED 
+  })
+});
 
-export { db };
+export const storage = getStorage(app);

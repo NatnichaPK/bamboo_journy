@@ -68,8 +68,10 @@ b {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   padding: 20px 0;
   align-items: center;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -164,7 +166,7 @@ b {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 0;
 }
 
 .nav-item-pill {
@@ -211,8 +213,9 @@ b {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding-bottom: 20px;
+  gap: 6px;
+  padding-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .garden-status-pill {
@@ -225,7 +228,9 @@ b {
   gap: 12px;
   width: calc(100% - 24px);
   box-sizing: border-box;
-  height: 50px;
+  height: 48px;
+  min-height: 48px;
+  flex-shrink: 0;
 }
 
 .sidebar-collapsed .garden-status-pill {
@@ -1280,10 +1285,12 @@ b {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 10px 0;
+  min-height: 0;
+  padding: 8px 0;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px
+  gap: 6px;
+  overflow: hidden;
 }
 
 .logo-section {
@@ -1691,10 +1698,10 @@ b {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 12px 12px 18px 12px;
+  gap: 8px;
+  padding: 8px 10px 10px 10px;
   box-sizing: border-box;
-  margin-top: 20px;
+  margin-top: 8px;
 }
 
 .fortune-center {
@@ -1835,6 +1842,42 @@ b {
 
   .app-layout.sidebar-open-main .sidebar {
     transform: translateX(0);
+  }
+
+  /* Keep sidebar content fully visible on short mobile screens (no scroll) */
+  .sidebar-container {
+    padding-top: 12px;
+    gap: 6px;
+  }
+
+  .nav-item-pill {
+    padding: 10px 16px;
+    margin-bottom: 5px;
+    min-height: 46px;
+  }
+
+  .sidebar-center {
+    margin-top: 8px;
+    gap: 8px;
+    padding: 8px 10px 10px 10px;
+  }
+
+  .fortune-center {
+    font-size: 0.86rem;
+    padding: 8px 10px;
+  }
+
+  .player-iframe {
+    height: 90px;
+  }
+
+  .garden-status-pill {
+    height: 44px;
+    padding: 0 16px;
+  }
+
+  .logout-text-link {
+    font-size: 0.8rem;
   }
 
   .main-content {
@@ -2462,39 +2505,12 @@ b {
   margin-bottom: 30px;
 }
 
-/* Bookshelf Display */
-.bookshelf-container {
-  width: 100%;
-  max-width: 320px;
-  aspect-ratio: 2 / 3.5;
-  background-image: url('https://path-to-your-uploaded/Bookshelf_background.jpg');
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  position: relative;
-  margin: 0 auto;
-}
-
 .shelf-books-grid {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-}
-
-.spine-on-shelf {
-  position: absolute;
-  height: 14%;
-  width: auto;
-  transform: translateY(-80%);
-  transition: transform 0.2s;
-  z-index: 2;
-}
-
-.spine-on-shelf:hover {
-  transform: translateY(-100%) scale(1.1);
-  z-index: 10;
 }
 
 .library-visual-sidebar {
@@ -2771,3 +2787,4 @@ b {
 .breathing-icon { 
   animation: pulse 3s ease-in-out infinite; 
 }
+

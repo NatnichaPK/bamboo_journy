@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase'; // ปรับ path ตามจริง
-import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, Timestamp, where } from "firebase/firestore";
 import { User } from "firebase/auth";
 import { DeleteModal } from '../components/Modal';
 
@@ -20,9 +20,12 @@ const MissionList: React.FC<Props> = ({ user, setCurrentAmbience }) => {
 
   useEffect(() => {
     if (!user) return;
-    const unsubTodos = onSnapshot(query(collection(db, "todos"), orderBy("createdAt", "desc")), (snap) => {
-      setTodos(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter((t: any) => !t.uid || t.uid === user.uid));
-    });
+    const unsubTodos = onSnapshot(
+      query(collection(db, "todos"), where("uid", "==", user.uid), orderBy("createdAt", "desc")),
+      (snap) => {
+        setTodos(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      }
+    );
     return () => unsubTodos();
   }, [user]);
 

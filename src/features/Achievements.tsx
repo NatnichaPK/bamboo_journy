@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { User } from "firebase/auth";
 
 interface Props {
@@ -15,15 +15,33 @@ const Achievements: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     if (!user) return;
-    const unsubTodos = onSnapshot(query(collection(db, "todos")), (snap) => {
-      setTodos(snap.docs.map(d => ({ ...d.data() })).filter((t: any) => !t.uid || t.uid === user.uid));
-    });
-    const unsubJournals = onSnapshot(query(collection(db, "journals")), (snap) => {
-      setJournals(snap.docs.map(d => ({ ...d.data() })).filter((j: any) => !j.uid || j.uid === user.uid));
-    });
-    const unsubRead = onSnapshot(query(collection(db, "booksRead")), (snap) => {
-      setBooksRead(snap.docs.map(d => ({ ...d.data() })).filter((b: any) => b.uid === user.uid));
-    });
+
+    // ✅ แก้ไข: เพิ่ม where("uid", "==", user.uid) ทุกอัน เพื่อให้ผ่าน Security Rules
+    
+    // 1. Fetch Todos
+    const unsubTodos = onSnapshot(
+      query(collection(db, "todos"), where("uid", "==", user.uid)), 
+      (snap) => {
+        setTodos(snap.docs.map(d => ({ ...d.data() })));
+      }
+    );
+
+    // 2. Fetch Journals
+    const unsubJournals = onSnapshot(
+      query(collection(db, "journals"), where("uid", "==", user.uid)), 
+      (snap) => {
+        setJournals(snap.docs.map(d => ({ ...d.data() })));
+      }
+    );
+
+    // 3. Fetch BooksRead
+    const unsubRead = onSnapshot(
+      query(collection(db, "booksRead"), where("uid", "==", user.uid)), 
+      (snap) => {
+        setBooksRead(snap.docs.map(d => ({ ...d.data() })));
+      }
+    );
+
     return () => { unsubTodos(); unsubJournals(); unsubRead(); };
   }, [user]);
 

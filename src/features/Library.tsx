@@ -1,17 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, Timestamp, where } from "firebase/firestore";
 import { User } from "firebase/auth";
 import { LibraryModal, DeleteModal } from '../components/Modal';
 
 // --- Assets ---
-const SHELF_BG = "https://img5.pic.in.th/file/secure-sv1/Bookshelf-background.jpg";
-const BOOK_SPINES = [
-  "https://img2.pic.in.th/58a588a2438d7574f.png", "https://img2.pic.in.th/6472edacb5cc20989.png",
-  "https://img2.pic.in.th/10842f07c6c278370f.png", "https://img2.pic.in.th/118768cdd157fa09b0.png",
-  "https://img2.pic.in.th/130f04f256e973ca64.png", "https://img2.pic.in.th/1c785628ac2e6e596.png",
-  "https://img2.pic.in.th/34a266bc929fd8425.png"
-];
+
+const CLOUD_NAME = "dlsr023t5";
+const UPLOAD_PRESET = "komorebi_preset";
 
 interface Props {
   user: User;
@@ -35,36 +31,58 @@ const Library: React.FC<Props> = ({ user }) => {
   const [libModalOpen, setLibModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   const libraryFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!user) return;
-    const unsubRead = onSnapshot(query(collection(db, "booksRead"), orderBy("createdAt", "desc")), (snap) => {
-      setBooksRead(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter((b: any) => b.uid === user.uid));
-    });
-    const unsubWish = onSnapshot(query(collection(db, "booksWish"), orderBy("createdAt", "desc")), (snap) => {
-      setBooksWish(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)).filter((b: any) => b.uid === user.uid));
-    });
-    const unsubTBR = onSnapshot(query(collection(db, "booksTBR"), orderBy("createdAt", "desc")), (snap) => {
-      setBooksTBR(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)).filter((b: any) => b.uid === user.uid));
-    });
-    const unsubPlaces = onSnapshot(query(collection(db, "readingPlaces"), orderBy("createdAt", "desc")), (snap) => {
-      setPlaces(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)).filter((p: any) => p.uid === user.uid));
-    });
+    const unsubRead = onSnapshot(
+      query(collection(db, "booksRead"), where("uid", "==", user.uid), orderBy("createdAt", "desc")),
+      (snap) => setBooksRead(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    );
+    const unsubWish = onSnapshot(
+      query(collection(db, "booksWish"), where("uid", "==", user.uid), orderBy("createdAt", "desc")),
+      (snap) => setBooksWish(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)))
+    );
+    const unsubTBR = onSnapshot(
+      query(collection(db, "booksTBR"), where("uid", "==", user.uid), orderBy("createdAt", "desc")),
+      (snap) => setBooksTBR(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)))
+    );
+    const unsubPlaces = onSnapshot(
+      query(collection(db, "readingPlaces"), where("uid", "==", user.uid), orderBy("createdAt", "desc")),
+      (snap) => setPlaces(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)))
+    );
     return () => { unsubRead(); unsubWish(); unsubTBR(); unsubPlaces(); };
   }, [user]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // --- 📸 ฟังก์ชันอัปโหลดไป Cloudinary ---
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 800000) {
-        alert("รูปใหญ่เกินไปค่ะ เลือกรูปอื่นที่ขนาดเล็กกว่า 800KB นะคะ");
-        return;
+    if (!file) return;
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET); // ต้องตรงกับที่ตั้งในเว็บ
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      
+      if (data.secure_url) {
+        setLibImage(data.secure_url); // ได้ลิงก์รูปมาแล้ว!
+      } else {
+        throw new Error("Upload failed");
       }
-      const reader = new FileReader();
-      reader.onloadend = () => setLibImage(reader.result as string);
-      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Cloudinary Upload Error:", error);
+      alert("อัปโหลดไม่ผ่าน เช็ค Cloud Name หรือ Preset ให้หน่อยนะคะ");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -128,25 +146,35 @@ const Library: React.FC<Props> = ({ user }) => {
           <button className={`pill-btn ${librarySubTab === 'place' ? 'active-library-sub' : ''}`} onClick={() => { setLibrarySubTab('place'); resetLibForm(); }}>อยากไปนั่งอ่าน 📍</button>
         </div>
       </header>
-      <div style={{ display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row', gap: '30px', marginBottom: '30px' }}>
-        <div style={{ width: '100%', maxWidth: '380px', margin: '0 auto' }}>
-          <div className="bookshelf-container" style={{ aspectRatio: '2/3.5', backgroundSize: '100% 100%', backgroundImage: `url(${SHELF_BG})`, position: 'relative' }}>
-            {booksRead.map((book, idx) => (<img key={book.id} src={BOOK_SPINES[idx % BOOK_SPINES.length]} className="spine-on-shelf" style={{ position: 'absolute', height: '14%', top: `${14 + (Math.floor(idx / 12) * 15.8)}%`, left: `${12 + ((idx % 12) * 3.5)}%`, transform: 'translateY(-80%)' }} />))}
-          </div>
-        </div>
-        <div className="cozy-card" style={{ flex: 1 }} ref={libraryFormRef}>
+      <div style={{ width: '100%', marginBottom: '30px' }}>
+        <div className="cozy-card" style={{ width: '100%' }} ref={libraryFormRef}>
           <div style={{ display: 'flex', gap: '20px', flexDirection: window.innerWidth < 480 ? 'column' : 'row' }}>
-            <div onClick={() => document.getElementById('img-up')?.click()} style={{ width: '120px', height: '160px', border: '2px dashed #ddd', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', background: '#f9f9f9', alignSelf: 'flex-start' }}>
-              {libImage ? <img src={libImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '2.5rem', opacity: 0.3 }}>📸</span>}
+            <div onClick={() => !isUploading && document.getElementById('img-up')?.click()} 
+                 style={{ 
+                   width: '120px', height: '160px', 
+                   border: '2px dashed #ddd', borderRadius: '12px', 
+                   display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                   cursor: isUploading ? 'wait' : 'pointer', 
+                   overflow: 'hidden', background: '#f9f9f9', alignSelf: 'flex-start',
+                   opacity: isUploading ? 0.5 : 1
+                 }}>
+              {isUploading ? <span>⏳</span> : 
+               libImage ? <img src={libImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : 
+               <span style={{ fontSize: '2.5rem', opacity: 0.3 }}>📸</span>}
             </div>
-            <input id="img-up" type="file" hidden accept="image/*" onChange={handleImageUpload} />
+            <input id="img-up" type="file" hidden accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
             <div style={{ flex: 1 }}>
               <input type="text" className="full-input" placeholder="ชื่อหนังสือ" value={libTitle} onChange={(e) => setLibTitle(e.target.value)} />
-              <div style={{ fontSize: '0.8rem', color: '#999', margin: '5px 0' }}>{libImage ? '✅ เลือกรูปแล้ว' : '☝️ กดที่กล้องเพื่ออัปโหลด'}</div>
+              <div style={{ fontSize: '0.8rem', color: '#999', margin: '5px 0' }}>
+                {isUploading ? 'กำลังอัปโหลดไป Cloudinary...' : 
+                 libImage ? '✅ อัปโหลดเรียบร้อย!' : '☝️ กดที่กล้องเพื่ออัปโหลด'}
+              </div>
               {librarySubTab === 'read' && <div>Rating: {[1, 2, 3, 4, 5].map(s => <span key={s} onClick={() => setLibRating(s)} style={{ cursor: 'pointer', color: s <= libRating ? 'gold' : '#ccc' }}>⭐</span>)}</div>}
               <textarea className="text-area-cozy" placeholder="Dump Text..." value={libExtra} onChange={(e) => setLibExtra(e.target.value)} />
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button onClick={isLibEditing ? saveEditLib : addLibraryItem} className="action-btn-main">{isLibEditing ? 'บันทึกแก้ไข' : 'เพิ่มลงคลัง'}</button>
+                <button onClick={isLibEditing ? saveEditLib : addLibraryItem} className="action-btn-main" disabled={isUploading}>
+                  {isLibEditing ? 'บันทึกแก้ไข' : 'เพิ่มลงคลัง'}
+                </button>
                 {isLibEditing && <button onClick={resetLibForm} className="action-btn-main" style={{ background: '#ccc' }}>ยกเลิก</button>}
               </div>
             </div>

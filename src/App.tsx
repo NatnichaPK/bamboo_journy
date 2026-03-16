@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { db, auth, googleProvider } from './firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
-import { collection, onSnapshot, query } from "firebase/firestore";
+import { collection, onSnapshot, query, where, orderBy } from "firebase/firestore";
 
 import Sidebar from './components/Sidebar';
 import FocusTimer from './components/FocusTimer';
@@ -21,7 +21,7 @@ function App() {
   const [currentAmbience, setCurrentAmbience] = useState('JdqL89ZZwFw');
   const [dailyFortune, setDailyFortune] = useState('');
   
-  // Data for Sidebar Garden Score (Still needed in App or Sidebar to display Level)
+  // Data for Sidebar Garden Score
   const [todos, setTodos] = useState<any[]>([]);
   const [journals, setJournals] = useState<any[]>([]);
   const [booksRead, setBooksRead] = useState<any[]>([]);
@@ -41,16 +41,33 @@ function App() {
       const msgs = ["วันนี้จะมีเรื่องดีๆ นะ🌻", "พักบ้างนะ🛏️", "ท้องฟ้าสวยจัง🌇", "ยิ้มหน่อยนะ 😊", "ขอให้วันนี้เป็นวันที่ดี!☀️", "คุณเก่งที่สุดเลย🌟", "ดื่มน้ำเยอะๆ นะ💧"];
       setDailyFortune(msgs[Math.floor(Math.random() * msgs.length)]);
       
-      // Fetch data specifically for Sidebar Garden Level display
-      const unsubTodos = onSnapshot(query(collection(db, "todos")), (snap) => {
-         setTodos(snap.docs.map(d => ({ ...d.data() })).filter((t:any) => !t.uid || t.uid === user.uid));
-      });
-      const unsubJournals = onSnapshot(query(collection(db, "journals")), (snap) => {
-         setJournals(snap.docs.map(d => ({ ...d.data() })).filter((j:any) => !j.uid || j.uid === user.uid));
-      });
-      const unsubRead = onSnapshot(query(collection(db, "booksRead")), (snap) => {
-         setBooksRead(snap.docs.map(d => ({ ...d.data() })).filter((b:any) => b.uid === user.uid));
-      });
+      // ✅ Fetch data specifically for Sidebar Garden Level display
+      // แก้ไข query ให้มี where และ orderBy เพื่อให้ผ่าน Security Rules
+
+      // 1. Todos
+      const unsubTodos = onSnapshot(
+        query(collection(db, "todos"), where("uid", "==", user.uid), orderBy("createdAt", "desc")), 
+        (snap) => {
+           setTodos(snap.docs.map(d => ({ ...d.data() })));
+        }
+      );
+
+      // 2. Journals
+      const unsubJournals = onSnapshot(
+        query(collection(db, "journals"), where("uid", "==", user.uid), orderBy("createdAt", "desc")), 
+        (snap) => {
+           setJournals(snap.docs.map(d => ({ ...d.data() })));
+        }
+      );
+
+      // 3. BooksRead
+      const unsubRead = onSnapshot(
+        query(collection(db, "booksRead"), where("uid", "==", user.uid), orderBy("createdAt", "desc")), 
+        (snap) => {
+           setBooksRead(snap.docs.map(d => ({ ...d.data() })));
+        }
+      );
+
       return () => { unsubTodos(); unsubJournals(); unsubRead(); };
     }
   }, [user]);
